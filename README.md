@@ -14,7 +14,7 @@ Adding dependency to pubspec.yaml
 
 ```
   dependencies:
-    google_datastore_v1beta2_api: '>=0.4.0'
+    google_datastore_v1beta2_api: '>=0.4.1'
 ```
 
 For web applications:
