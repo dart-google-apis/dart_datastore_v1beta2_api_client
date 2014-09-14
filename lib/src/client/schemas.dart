@@ -130,6 +130,8 @@ class BeginTransactionResponse {
 
 class CommitRequest {
 
+  core.bool ignoreReadOnly;
+
   /** The type of commit to perform. Either TRANSACTIONAL or NON_TRANSACTIONAL. */
   core.String mode;
 
@@ -141,6 +143,9 @@ class CommitRequest {
 
   /** Create new CommitRequest from JSON data */
   CommitRequest.fromJson(core.Map json) {
+    if (json.containsKey("ignoreReadOnly")) {
+      ignoreReadOnly = json["ignoreReadOnly"];
+    }
     if (json.containsKey("mode")) {
       mode = json["mode"];
     }
@@ -156,6 +161,9 @@ class CommitRequest {
   core.Map toJson() {
     var output = new core.Map();
 
+    if (ignoreReadOnly != null) {
+      output["ignoreReadOnly"] = ignoreReadOnly;
+    }
     if (mode != null) {
       output["mode"] = mode;
     }
@@ -454,7 +462,7 @@ class Key {
   /** Entities are partitioned into subsets, currently identified by a dataset (usually implicitly specified by the project) and namespace ID. Queries are scoped to a single partition. */
   PartitionId partitionId;
 
-  /** The entity path. An entity path consists of one or more elements composed of a kind and a string or numerical identifier, which identify entities. The first element identifies a root entity, the second element identifies a child of the root entity, the third element a child of the second entity, and so forth. The entities identified by all prefixes of the path are called the element's ancestors. An entity path is always fully complete: ALL of the entity's ancestors are required to be in the path along with the entity identifier itself. The only exception is that in some documented cases, the identifier in the last path element (for the entity) itself may be omitted. A path can never be empty. */
+  /** The entity path. An entity path consists of one or more elements composed of a kind and a string or numerical identifier, which identify entities. The first element identifies a root entity, the second element identifies a child of the root entity, the third element a child of the second entity, and so forth. The entities identified by all prefixes of the path are called the element's ancestors. An entity path is always fully complete: ALL of the entity's ancestors are required to be in the path along with the entity identifier itself. The only exception is that in some documented cases, the identifier in the last path element (for the entity) itself may be omitted. A path can never be empty. The path can have at most 100 elements. */
   core.List<KeyPathElement> path;
 
   /** Create new Key from JSON data */
@@ -491,13 +499,13 @@ class Key {
 At most one of name or ID may be set. If either is set, the element is complete. If neither is set, the element is incomplete. */
 class KeyPathElement {
 
-  /** The ID of the entity. Always > 0. */
+  /** The ID of the entity. Never equal to zero. Values less than zero are discouraged and will not be supported in the future. */
   core.int id;
 
-  /** The kind of the entity. Kinds matching regex "__.*__" are reserved/read-only. Cannot be "". */
+  /** The kind of the entity. A kind matching regex "__.*__" is reserved/read-only. A kind must not contain more than 500 characters. Cannot be "". */
   core.String kind;
 
-  /** The name of the entity. Names matching regex "__.*__" are reserved/read-only. Cannot be "". */
+  /** The name of the entity. A name matching regex "__.*__" is reserved/read-only. A name must not be more than 500 characters. Cannot be "". */
   core.String name;
 
   /** Create new KeyPathElement from JSON data */
@@ -806,7 +814,7 @@ class Property {
   /** A blob key value. */
   core.String blobKeyValue;
 
-  /** A blob value. */
+  /** A blob value. May be a maximum of 1,000,000 bytes. */
   core.String blobValue;
 
   /** A boolean value. */
@@ -1281,7 +1289,7 @@ class ReadOptions {
 
 class ResponseHeader {
 
-  /** The kind, fixed to "datastore#responseHeader". */
+  /** Identifies what kind of resource this is. Value: the fixed string "datastore#responseHeader". */
   core.String kind;
 
   /** Create new ResponseHeader from JSON data */
@@ -1367,7 +1375,7 @@ class RunQueryRequest {
   /** The GQL query to run. Either this field or field query must be set, but not both. */
   GqlQuery gqlQuery;
 
-  /** Entities are partitioned into subsets, identified by a dataset (usually implicitly specified by the project) and namespace ID. Queries are scoped to a single partition. */
+  /** Entities are partitioned into subsets, identified by a dataset (usually implicitly specified by the project) and namespace ID. Queries are scoped to a single partition. This partition ID is normalized with the standard default context partition ID, but all other partition IDs in RunQueryRequest are normalized with this partition ID as the context partition ID. */
   PartitionId partitionId;
 
   /** The query to run. Either this field or field gql_query must be set, but not both. */
@@ -1458,7 +1466,7 @@ class Value {
   /** A blob key value. */
   core.String blobKeyValue;
 
-  /** A blob value. */
+  /** A blob value. May be a maximum of 1,000,000 bytes. */
   core.String blobValue;
 
   /** A boolean value. */
